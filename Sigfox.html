@@ -1,0 +1,2397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sigfox IoT Technology - Comprehensive Research Presentation</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        display: ['Space Grotesk', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                        body: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        html {
+            scroll-behavior: smooth;
+            scroll-snap-type: y mandatory;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #030306;
+            color: #e5e5e5;
+            overflow-x: hidden;
+        }
+        
+        .slide {
+            min-height: 100vh;
+            padding: 2.5rem 3.5rem;
+            position: relative;
+            overflow: hidden;
+            scroll-snap-align: start;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .gradient-bg {
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
+        
+        .gradient-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(100px);
+            opacity: 0.25;
+            transition: all 2s ease;
+        }
+        
+        .gradient-orb-1 {
+            width: 500px;
+            height: 500px;
+            background: linear-gradient(135deg, #0066FF, #00D4FF);
+            top: -150px;
+            right: -150px;
+        }
+        
+        .gradient-orb-2 {
+            width: 400px;
+            height: 400px;
+            background: linear-gradient(135deg, #6B5CE7, #0066FF);
+            bottom: -100px;
+            left: -100px;
+        }
+        
+        .gradient-orb-3 {
+            width: 300px;
+            height: 300px;
+            background: #00D4FF;
+            top: 50%;
+            left: 30%;
+            opacity: 0.1;
+        }
+        
+        .content {
+            position: relative;
+            z-index: 1;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #0066FF, #00D4FF, #6B5CE7);
+            transition: width 0.3s ease;
+            z-index: 1000;
+        }
+        
+        .nav-indicator {
+            position: fixed;
+            right: 1.5rem;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            z-index: 100;
+        }
+        
+        .nav-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.15);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-dot:hover {
+            background: rgba(0, 212, 255, 0.5);
+            transform: scale(1.3);
+        }
+        
+        .nav-dot.active {
+            background: #00D4FF;
+            box-shadow: 0 0 15px rgba(0, 212, 255, 0.6);
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, rgba(15,15,25,0.95), rgba(10,10,18,0.8));
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 20px;
+            padding: 1.5rem;
+            backdrop-filter: blur(20px);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(0,102,255,0.1), transparent);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: scale(1.03) translateY(-4px);
+            border-color: rgba(0, 102, 255, 0.4);
+            box-shadow: 
+                0 20px 40px rgba(0,0,0,0.4),
+                0 0 60px rgba(0, 102, 255, 0.15),
+                inset 0 1px 0 rgba(255,255,255,0.05);
+        }
+        
+        .stat-card:hover::before {
+            opacity: 1;
+        }
+        
+        .stat-card:active {
+            transform: scale(0.98);
+        }
+        
+        .tech-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+        
+        .tech-table th {
+            background: rgba(0, 102, 255, 0.12);
+            padding: 1rem 1.25rem;
+            text-align: left;
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 500;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: #00D4FF;
+            border-bottom: 1px solid rgba(0, 102, 255, 0.2);
+        }
+        
+        .tech-table th:first-child { border-radius: 12px 0 0 0; }
+        .tech-table th:last-child { border-radius: 0 12px 0 0; }
+        
+        .tech-table td {
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            font-size: 0.875rem;
+            transition: all 0.2s ease;
+        }
+        
+        .tech-table tbody tr {
+            background: rgba(12, 12, 20, 0.6);
+            transition: all 0.2s ease;
+        }
+        
+        .tech-table tbody tr:hover {
+            background: rgba(0, 102, 255, 0.08);
+        }
+        
+        .tech-table tbody tr:hover td {
+            color: #fff;
+        }
+        
+        .tech-table tr:last-child td:first-child { border-radius: 0 0 0 12px; }
+        .tech-table tr:last-child td:last-child { border-radius: 0 0 12px 0; }
+        
+        .timeline-item {
+            position: relative;
+            padding-left: 2.5rem;
+            padding-bottom: 2rem;
+            opacity: 0;
+            transform: translateX(-20px);
+            animation: slideIn 0.6s ease forwards;
+        }
+        
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0.5rem;
+            width: 12px;
+            height: 12px;
+            background: linear-gradient(135deg, #0066FF, #00D4FF);
+            border-radius: 50%;
+            box-shadow: 0 0 20px rgba(0, 102, 255, 0.5);
+        }
+        
+        .timeline-item::after {
+            content: '';
+            position: absolute;
+            left: 5px;
+            top: 1.75rem;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(180deg, rgba(0,102,255,0.4), transparent);
+        }
+        
+        .timeline-item:last-child::after { display: none; }
+        
+        @keyframes slideIn {
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 0.4rem 1rem;
+            background: rgba(0, 102, 255, 0.1);
+            border: 1px solid rgba(0, 102, 255, 0.25);
+            border-radius: 100px;
+            font-size: 0.7rem;
+            font-weight: 500;
+            color: #00D4FF;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+        
+        .pulse-dot {
+            width: 6px;
+            height: 6px;
+            background: #00D4FF;
+            border-radius: 50%;
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.5); }
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-15px) rotate(1deg); }
+        }
+        
+        .float-animation {
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+        
+        .gradient-text {
+            background: linear-gradient(135deg, #fff, #00D4FF, #6B5CE7, #0066FF);
+            background-size: 300% 300%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradientShift 8s ease infinite;
+        }
+        
+        .grid-lines {
+            position: absolute;
+            inset: 0;
+            background-image: 
+                linear-gradient(rgba(0,102,255,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,102,255,0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            pointer-events: none;
+        }
+        
+        .hex-pattern {
+            position: absolute;
+            inset: 0;
+            opacity: 0.02;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='49' viewBox='0 0 28 49'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%230066ff' fill-opacity='1'%3E%3Cpath d='M13.99 9.25l13 7.5v15l-13 7.5L1 31.75v-15l12.99-7.5zM3 17.9v12.7l10.99 6.34 11-6.35V17.9l-11-6.34L3 17.9zM0 15l12.98-7.5V0h-2v6.35L0 12.69v2.3zm0 18.5L12.98 41v8h-2v-6.85L0 35.81v-2.3zM15 0v7.5L27.99 15H28v-2.31h-.01L17 6.35V0h-2zm0 49v-8l12.99-7.5H28v2.31h-.01L17 42.15V49h-2z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            pointer-events: none;
+        }
+        
+        .info-tooltip {
+            position: relative;
+        }
+        
+        .info-tooltip .tooltip-content {
+            position: absolute;
+            bottom: calc(100% + 10px);
+            left: 50%;
+            transform: translateX(-50%) scale(0.9);
+            background: rgba(15, 15, 25, 0.98);
+            border: 1px solid rgba(0, 102, 255, 0.3);
+            border-radius: 12px;
+            padding: 1rem 1.25rem;
+            font-size: 0.8rem;
+            color: rgba(255,255,255,0.8);
+            width: 280px;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            z-index: 100;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+        }
+        
+        .info-tooltip:hover .tooltip-content {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(-50%) scale(1);
+        }
+        
+        .data-viz {
+            position: relative;
+            height: 200px;
+            display: flex;
+            align-items: flex-end;
+            gap: 8px;
+            padding: 1rem;
+        }
+        
+        .data-bar {
+            flex: 1;
+            background: linear-gradient(180deg, #00D4FF, #0066FF);
+            border-radius: 6px 6px 0 0;
+            transition: all 0.5s ease;
+            position: relative;
+            min-height: 10px;
+        }
+        
+        .data-bar:hover {
+            background: linear-gradient(180deg, #00FFFF, #00D4FF);
+            box-shadow: 0 0 30px rgba(0, 212, 255, 0.4);
+        }
+        
+        .data-bar span {
+            position: absolute;
+            bottom: calc(100% + 8px);
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.7rem;
+            color: #00D4FF;
+            white-space: nowrap;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        
+        .signal-wave {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            height: 40px;
+        }
+        
+        .signal-bar {
+            width: 4px;
+            background: linear-gradient(180deg, #00D4FF, #0066FF);
+            border-radius: 2px;
+            animation: signalPulse 1.5s ease-in-out infinite;
+        }
+        
+        @keyframes signalPulse {
+            0%, 100% { height: 20%; }
+            50% { height: 100%; }
+        }
+        
+        .code-block {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 1.25rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            overflow-x: auto;
+        }
+        
+        .code-block .keyword { color: #6B5CE7; }
+        .code-block .string { color: #00D4FF; }
+        .code-block .number { color: #22C55E; }
+        .code-block .comment { color: rgba(255,255,255,0.3); }
+        
+        .interactive-map {
+            position: relative;
+            aspect-ratio: 2/1;
+            background: linear-gradient(135deg, rgba(0,102,255,0.05), rgba(0,0,0,0.3));
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        
+        .map-dot {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: #00D4FF;
+            border-radius: 50%;
+            animation: mapPulse 2s ease-in-out infinite;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+        
+        .map-dot:hover {
+            transform: scale(2);
+        }
+        
+        @keyframes mapPulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(0, 212, 255, 0.6); }
+            50% { box-shadow: 0 0 0 10px rgba(0, 212, 255, 0); }
+        }
+        
+        .counter {
+            font-family: 'JetBrains Mono', monospace;
+            font-variant-numeric: tabular-nums;
+        }
+        
+        .expandable-card {
+            cursor: pointer;
+        }
+        
+        .expandable-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease, opacity 0.3s ease;
+            opacity: 0;
+        }
+        
+        .expandable-card.expanded .expandable-content {
+            max-height: 500px;
+            opacity: 1;
+        }
+        
+        .expand-icon {
+            transition: transform 0.3s ease;
+        }
+        
+        .expandable-card.expanded .expand-icon {
+            transform: rotate(180deg);
+        }
+        
+        .range-slider {
+            width: 100%;
+            height: 6px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: rgba(255,255,255,0.1);
+            border-radius: 3px;
+            outline: none;
+        }
+        
+        .range-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            background: linear-gradient(135deg, #0066FF, #00D4FF);
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 20px rgba(0, 102, 255, 0.5);
+        }
+        
+        @media (max-width: 1024px) {
+            .slide { padding: 1.5rem; }
+            .nav-indicator { display: none; }
+        }
+        
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="progress-bar" id="progressBar"></div>
+    
+    <!-- Navigation Dots -->
+    <div class="nav-indicator" id="navIndicator"></div>
+
+    <!-- Slide 1: Title -->
+    <div class="slide" id="slide1">
+        <div class="gradient-bg">
+            <div class="gradient-orb gradient-orb-1"></div>
+            <div class="gradient-orb gradient-orb-2"></div>
+            <div class="grid-lines"></div>
+            <div class="hex-pattern"></div>
+        </div>
+        <div class="content justify-center items-center text-center">
+            <div class="mb-8">
+                <span class="badge"><span class="pulse-dot"></span>LPWAN Technology Research</span>
+            </div>
+            <h1 class="text-5xl md:text-7xl lg:text-8xl mb-6 font-display font-bold gradient-text">
+                Sigfox IoT<br/>Technology
+            </h1>
+            <p class="text-lg md:text-xl text-white/40 max-w-2xl mx-auto font-light mb-10">
+                Comprehensive Research Report on Low Power Wide Area Network for Massive IoT Applications
+            </p>
+            
+            <!-- Animated Stats -->
+            <div class="flex flex-wrap gap-4 justify-center mb-12">
+                <div class="stat-card text-center px-8 py-5 group">
+                    <div class="text-4xl font-display font-bold text-cyan-400 counter" data-target="75">0</div>
+                    <div class="text-xs text-white/40 mt-1 uppercase tracking-wider">Countries</div>
+                    <div class="text-xs text-cyan-400/60 mt-1 opacity-0 group-hover:opacity-100 transition-opacity">Global Network Coverage</div>
+                </div>
+                <div class="stat-card text-center px-8 py-5 group">
+                    <div class="text-4xl font-display font-bold text-blue-400 counter" data-target="1.3" data-suffix="B">0</div>
+                    <div class="text-xs text-white/40 mt-1 uppercase tracking-wider">People Covered</div>
+                    <div class="text-xs text-blue-400/60 mt-1 opacity-0 group-hover:opacity-100 transition-opacity">Population Reach</div>
+                </div>
+                <div class="stat-card text-center px-8 py-5 group">
+                    <div class="text-4xl font-display font-bold text-purple-400 counter" data-target="40" data-suffix="km">0</div>
+                    <div class="text-xs text-white/40 mt-1 uppercase tracking-wider">Max Range</div>
+                    <div class="text-xs text-purple-400/60 mt-1 opacity-0 group-hover:opacity-100 transition-opacity">Rural Line-of-Sight</div>
+                </div>
+                <div class="stat-card text-center px-8 py-5 group">
+                    <div class="text-4xl font-display font-bold text-green-400 counter" data-target="10" data-suffix="+">0</div>
+                    <div class="text-xs text-white/40 mt-1 uppercase tracking-wider">Years Battery</div>
+                    <div class="text-xs text-green-400/60 mt-1 opacity-0 group-hover:opacity-100 transition-opacity">Ultra-Low Power</div>
+                </div>
+            </div>
+            
+            <!-- Signal Animation -->
+            <div class="signal-wave mx-auto mb-8">
+                <div class="signal-bar" style="animation-delay: 0s;"></div>
+                <div class="signal-bar" style="animation-delay: 0.1s;"></div>
+                <div class="signal-bar" style="animation-delay: 0.2s;"></div>
+                <div class="signal-bar" style="animation-delay: 0.3s;"></div>
+                <div class="signal-bar" style="animation-delay: 0.4s;"></div>
+                <div class="signal-bar" style="animation-delay: 0.5s;"></div>
+                <div class="signal-bar" style="animation-delay: 0.6s;"></div>
+                <div class="signal-bar" style="animation-delay: 0.7s;"></div>
+                <div class="signal-bar" style="animation-delay: 0.8s;"></div>
+                <div class="signal-bar" style="animation-delay: 0.9s;"></div>
+            </div>
+            
+            
+        </div>
+    </div>
+
+    <!-- Slide 2: Executive Summary -->
+    <div class="slide" id="slide2">
+        <div class="gradient-bg">
+            <div class="gradient-orb gradient-orb-1" style="opacity: 0.15;"></div>
+            <div class="grid-lines"></div>
+        </div>
+        <div class="content">
+            <div class="flex items-center gap-3 mb-6">
+                <span class="badge"><span class="pulse-dot"></span>Section 1</span>
+                <span class="text-white/30 text-sm">Overview</span>
+            </div>
+            <h2 class="text-4xl md:text-5xl mb-8 text-white font-display font-bold">Executive Summary</h2>
+            <div class="grid lg:grid-cols-2 gap-6 flex-1">
+                <div class="space-y-5">
+                    <div class="stat-card expandable-card" onclick="this.classList.toggle('expanded')">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500/20 to-blue-500/20 flex items-center justify-center">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00D4FF" stroke-width="2">
+                                        <circle cx="12" cy="12" r="10"/>
+                                        <path d="M12 16v-4M12 8h.01"/>
+                                    </svg>
+                                </div>
+                                <h3 class="text-lg font-display font-semibold text-white">What is Sigfox?</h3>
+                            </div>
+                            <svg class="expand-icon w-5 h-5 text-white/30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="6 9 12 15 18 9"/>
+                            </svg>
+                        </div>
+                        <p class="text-white/50 mt-3 leading-relaxed text-sm">
+                            A pioneering Low Power Wide Area Network (LPWAN) technology designed specifically for Massive IoT applications. Founded in 2010 in France.
+                        </p>
+                        <div class="expandable-content">
+                            <div class="mt-4 pt-4 border-t border-white/5">
+                                <div class="grid grid-cols-2 gap-3 text-sm">
+                                    <div><span class="text-cyan-400">Founded:</span> <span class="text-white/70">2010, Labège, France</span></div>
+                                    <div><span class="text-cyan-400">Founders:</span> <span class="text-white/70">Le Moan & Fourtet</span></div>
+                                    <div><span class="text-cyan-400">Owner:</span> <span class="text-white/70">UnaBiz (since 2022)</span></div>
+                                    <div><span class="text-cyan-400">Type:</span> <span class="text-white/70">Public Network Service</span></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card expandable-card" onclick="this.classList.toggle('expanded')">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0066FF" stroke-width="2">
+                                        <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+                                    </svg>
+                                </div>
+                                <h3 class="text-lg font-display font-semibold text-white">UNB Technology</h3>
+                            </div>
+                            <svg class="expand-icon w-5 h-5 text-white/30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="6 9 12 15 18 9"/>
+                            </svg>
+                        </div>
+                        <p class="text-white/50 mt-3 leading-relaxed text-sm">
+                            Ultra-Narrowband (UNB) radio modulation enables small data packets transmission over extended distances with minimal power consumption.
+                        </p>
+                        <div class="expandable-content">
+                            <div class="mt-4 pt-4 border-t border-white/5">
+                                <div class="code-block text-xs">
+                                    <span class="comment">// UNB Signal Characteristics</span><br>
+                                    <span class="keyword">bandwidth</span>: <span class="string">"100 Hz"</span> <span class="comment">// Ultra narrow</span><br>
+                                    <span class="keyword">modulation_up</span>: <span class="string">"D-BPSK"</span> <span class="comment">// Uplink</span><br>
+                                    <span class="keyword">modulation_down</span>: <span class="string">"GFSK"</span> <span class="comment">// Downlink</span><br>
+                                    <span class="keyword">power_density</span>: <span class="number">"High"</span> <span class="comment">// Per Hz</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card expandable-card" onclick="this.classList.toggle('expanded')">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500/20 to-pink-500/20 flex items-center justify-center">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6B5CE7" stroke-width="2">
+                                        <polygon points="12 2 2 7 12 12 22 7 12 2"/>
+                                        <polyline points="2 17 12 22 22 17"/>
+                                        <polyline points="2 12 12 17 22 12"/>
+                                    </svg>
+                                </div>
+                                <h3 class="text-lg font-display font-semibold text-white">Network Philosophy</h3>
+                            </div>
+                            <svg class="expand-icon w-5 h-5 text-white/30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="6 9 12 15 18 9"/>
+                            </svg>
+                        </div>
+                        <p class="text-white/50 mt-3 leading-relaxed text-sm">
+                            Lightweight protocol optimized for small, infrequent data transmissions — ideal for sensor-based applications with periodic status updates.
+                        </p>
+                        <div class="expandable-content">
+                            <div class="mt-4 pt-4 border-t border-white/5 grid grid-cols-2 gap-4">
+                                <div class="text-center p-3 rounded-lg bg-white/5">
+                                    <div class="text-2xl font-display font-bold text-cyan-400">140</div>
+                                    <div class="text-xs text-white/40">Messages/Day Max</div>
+                                </div>
+                                <div class="text-center p-3 rounded-lg bg-white/5">
+                                    <div class="text-2xl font-display font-bold text-blue-400">12</div>
+                                    <div class="text-xs text-white/40">Bytes Payload</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Range Visualization -->
+                <div class="flex flex-col gap-5">
+                    <div class="stat-card p-6 flex-1">
+                        <h3 class="text-lg font-display font-semibold text-white mb-4">Transmission Range</h3>
+                        <div class="data-viz">
+                            <div class="data-bar" style="height: 25%;">
+                                <span>Urban: 3-10km</span>
+                            </div>
+                            <div class="data-bar" style="height: 60%;">
+                                <span>Suburban: 15-25km</span>
+                            </div>
+                            <div class="data-bar" style="height: 100%;">
+                                <span>Rural: 30-50km</span>
+                            </div>
+                        </div>
+                        <div class="mt-4 p-4 rounded-lg bg-white/5 border border-white/5">
+                            <div class="flex items-center gap-3 mb-3">
+                                <div class="w-3 h-3 rounded-full bg-cyan-400"></div>
+                                <span class="text-sm text-white/70">Line-of-sight conditions</span>
+                            </div>
+                            <p class="text-xs text-white/40">Range depends on terrain, building density, antenna placement, and environmental factors.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card p-6">
+                        <h3 class="text-lg font-display font-semibold text-white mb-4">Key Design Decisions</h3>
+                        <div class="space-y-3">
+                            <div class="flex items-center justify-between p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors">
+                                <span class="text-white/60 text-sm">Small Payload</span>
+                                <span class="text-cyan-400 font-mono text-sm">12 bytes</span>
+                            </div>
+                            <div class="flex items-center justify-between p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors">
+                                <span class="text-white/60 text-sm">Limited Messages</span>
+                                <span class="text-blue-400 font-mono text-sm">140/day</span>
+                            </div>
+                            <div class="flex items-center justify-between p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors">
+                                <span class="text-white/60 text-sm">Simple Protocol</span>
+                                <span class="text-purple-400 font-mono text-sm">UNB</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 3: Technical Specifications -->
+    <div class="slide" id="slide3">
+        <div class="gradient-bg">
+            <div class="gradient-orb gradient-orb-2" style="opacity: 0.2;"></div>
+            <div class="grid-lines"></div>
+        </div>
+        <div class="content">
+            <div class="flex items-center gap-3 mb-6">
+                <span class="badge"><span class="pulse-dot"></span>Section 3</span>
+                <span class="text-white/30 text-sm">Technical Specifications</span>
+            </div>
+            <h2 class="text-4xl md:text-5xl mb-6 text-white font-display font-bold">Technical Specifications</h2>
+            <div class="grid lg:grid-cols-3 gap-5 flex-1">
+                <!-- Main Specs Table -->
+                <div class="lg:col-span-2 stat-card p-0 overflow-hidden">
+                    <table class="tech-table">
+                        <thead>
+                            <tr>
+                                <th>Parameter</th>
+                                <th>Specification</th>
+                                <th>Details</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="info-tooltip">
+                                <td class="text-white/60">Frequency Band</td>
+                                <td class="font-medium text-white font-mono">868 / 902 MHz</td>
+                                <td class="text-cyan-400 text-xs">-ISM Bands</td>
+                                <div class="tooltip-content">
+                                    <strong class="text-cyan-400">-ISM Bands</strong><br>
+                                    Industrial, Scientific, Medical bands - globally available, no licensing required. 868 MHz for Europe/Africa/Asia, 902 MHz for Americas.
+                                </div>
+                            </tr>
+                            <tr class="info-tooltip">
+                                <td class="text-white/60">-Bandwidth per Channel</td>
+                                <td class="font-medium text-cyan-400 font-mono">100 Hz</td>
+                                <td class="text-white/40 text-xs">-Ultra-Narrowband</td>
+                                <div class="tooltip-content">
+                                    <strong class="text-cyan-400">-Ultra-Narrowband</strong><br>
+                                    Only 100 Hz bandwidth per signal enables high power density, excellent noise immunity, and extended range compared to wideband alternatives.
+                                </div>
+                            </tr>
+                            <tr class="info-tooltip">
+                                <td class="text-white/60">Data Rate</td>
+                                <td class="font-medium text-white font-mono">100-600 bps</td>
+                                <td class="text-blue-400 text-xs">-Region Dependent</td>
+                                <div class="tooltip-content">
+                                    <strong class="text-blue-400">-Regional Variants</strong><br>
+                                    RC1 (Europe/Africa/Asia): 100 bps<br>
+                                    RC2 (Americas): 600 bps<br>
+                                    Higher rates in Americas due to different spectrum regulations.
+                                </div>
+                            </tr>
+                            <tr>
+                                <td class="text-white/60">Range (Urban)</td>
+                                <td class="font-medium text-white font-mono">3-10 km</td>
+                                <td class="text-white/40 text-xs">Building Density</td>
+                            </tr>
+                            <tr>
+                                <td class="text-white/60">Range (Rural)</td>
+                                <td class="font-medium text-blue-400 font-mono">30-50 km</td>
+                                <td class="text-white/40 text-xs">Line-of-Sight</td>
+                            </tr>
+                            <tr class="info-tooltip">
+                                <td class="text-white/60">Payload Size</td>
+                                <td class="font-medium text-purple-400 font-mono">12 bytes</td>
+                                <td class="text-white/40 text-xs">-Uplink Max</td>
+                                <div class="tooltip-content">
+                                    <strong class="text-purple-400">-12 Byte Payload</strong><br>
+                                    Sufficient for sensor values (temp, location, status), GPS coordinates (~8 bytes), or simple telemetry. Requires efficient encoding.
+                                </div>
+                            </tr>
+                            <tr>
+                                <td class="text-white/60">Messages/Day</td>
+                                <td class="font-medium text-white font-mono">140 up / 4 down</td>
+                                <td class="text-white/40 text-xs">Per Device</td>
+                            </tr>
+                            <tr>
+                                <td class="text-white/60">Modulation (Uplink)</td>
+                                <td class="font-medium text-cyan-400 font-mono">D-BPSK</td>
+                                <td class="text-white/40 text-xs">Differential BPSK</td>
+                            </tr>
+                            <tr>
+                                <td class="text-white/60">Modulation (Downlink)</td>
+                                <td class="font-medium text-blue-400 font-mono">GFSK</td>
+                                <td class="text-white/40 text-xs">Gaussian FSK</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Side Info -->
+                <div class="space-y-5">
+                    <div class="stat-card p-5">
+                        <h3 class="text-base font-display font-semibold text-cyan-400 mb-4">UNB Advantages</h3>
+                        <div class="space-y-3">
+                            <div class="flex items-start gap-3 p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors">
+                                <div class="w-6 h-6 rounded-full bg-green-500/20 flex items-center justify-center shrink-0 mt-0.5">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#22C55E" stroke-width="3">
+                                        <polyline points="20 6 9 17 4 12"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <div class="text-white text-sm font-medium">Interference Resistance</div>
+                                    <div class="text-white/40 text-xs">Narrow signals coexist with other technologies</div>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-3 p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors">
+                                <div class="w-6 h-6 rounded-full bg-green-500/20 flex items-center justify-center shrink-0 mt-0.5">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#22C55E" stroke-width="3">
+                                        <polyline points="20 6 9 17 4 12"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <div class="text-white text-sm font-medium">High Sensitivity</div>
+                                    <div class="text-white/40 text-xs">Receivers detect weak distant signals</div>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-3 p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors">
+                                <div class="w-6 h-6 rounded-full bg-green-500/20 flex items-center justify-center shrink-0 mt-0.5">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#22C55E" stroke-width="3">
+                                        <polyline points="20 6 9 17 4 12"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <div class="text-white text-sm font-medium">Low Complexity</div>
+                                    <div class="text-white/40 text-xs">Minimal hardware, lower cost</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card p-5">
+                        <h3 class="text-base font-display font-semibold text-blue-400 mb-3">Regional Data Rates</h3>
+                        <div class="flex gap-3">
+                            <div class="flex-1 p-4 rounded-xl bg-blue-500/10 border border-blue-500/20 text-center hover:scale-105 transition-transform cursor-pointer">
+                                <div class="text-3xl font-display font-bold text-blue-400 font-mono">100</div>
+                                <div class="text-xs text-white/50 mt-1">bps (RC1)</div>
+                                <div class="text-xs text-white/30 mt-2">EU • Africa • Asia</div>
+                            </div>
+                            <div class="flex-1 p-4 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-center hover:scale-105 transition-transform cursor-pointer">
+                                <div class="text-3xl font-display font-bold text-cyan-400 font-mono">600</div>
+                                <div class="text-xs text-white/50 mt-1">bps (RC2)</div>
+                                <div class="text-xs text-white/30 mt-2">Americas</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 4: Network Architecture -->
+    <div class="slide" id="slide4">
+        <div class="gradient-bg">
+            <div class="gradient-orb gradient-orb-1" style="opacity: 0.15;"></div>
+            <div class="hex-pattern"></div>
+        </div>
+        <div class="content">
+            <div class="flex items-center gap-3 mb-6">
+                <span class="badge"><span class="pulse-dot"></span>Section 3.3</span>
+                <span class="text-white/30 text-sm">Architecture</span>
+            </div>
+            <h2 class="text-4xl md:text-5xl mb-6 text-white font-display font-bold">Network Architecture</h2>
+            
+            <!-- Architecture Diagram -->
+            <div class="grid lg:grid-cols-5 gap-5 mb-5 flex-1">
+                <!-- End Devices -->
+                <div class="stat-card p-5 flex flex-col">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500/20 to-cyan-500/20 flex items-center justify-center float-animation">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#22C55E" stroke-width="1.5">
+                                <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/>
+                                <line x1="12" y1="18" x2="12.01" y2="18"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="font-display font-semibold text-white">End Devices</h3>
+                            <div class="text-xs text-green-400">IoT Sensors</div>
+                        </div>
+                    </div>
+                    <div class="flex-1 space-y-2 text-sm">
+                        <div class="p-2 rounded bg-white/5 text-white/60">
+                            <span class="text-green-400">•</span> Wake → Transmit → Sleep
+                        </div>
+                        <div class="p-2 rounded bg-white/5 text-white/60">
+                            <span class="text-green-400">•</span> No routing overhead
+                        </div>
+                        <div class="p-2 rounded bg-white/5 text-white/60">
+                            <span class="text-green-400">•</span> Asynchronous TX
+                        </div>
+                        <div class="p-2 rounded bg-white/5 text-white/60">
+                            <span class="text-green-400">•</span> Deep sleep capable
+                        </div>
+                    </div>
+                    <div class="mt-3 pt-3 border-t border-white/5">
+                        <div class="text-xs text-white/40">Power Consumption</div>
+                        <div class="text-lg font-display font-bold text-green-400">25μW avg</div>
+                    </div>
+                </div>
+                
+                <!-- Connection Arrow -->
+                <div class="hidden lg:flex items-center justify-center">
+                    <div class="flex flex-col items-center gap-2">
+                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="rgba(0,212,255,0.5)" stroke-width="1.5">
+                            <path d="M5 12h14M12 5l7 7-7 7"/>
+                        </svg>
+                        <div class="text-xs text-cyan-400/60 font-mono">UNB RF</div>
+                        <div class="text-xs text-white/30">100 Hz</div>
+                    </div>
+                </div>
+                
+                <!-- Base Stations -->
+                <div class="stat-card p-5 flex flex-col">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center float-animation" style="animation-delay: 0.5s;">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0066FF" stroke-width="1.5">
+                                <path d="M4.93 19.07A10 10 0 1 1 19.07 4.93"/>
+                                <circle cx="12" cy="12" r="3"/>
+                                <path d="M12 2v4M12 18v4M2 12h4M18 12h4"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="font-display font-semibold text-white">Base Stations</h3>
+                            <div class="text-xs text-blue-400">Access Points</div>
+                        </div>
+                    </div>
+                    <div class="flex-1 space-y-2 text-sm">
+                        <div class="p-2 rounded bg-white/5 text-white/60">
+                            <span class="text-blue-400">•</span> High-sensitivity RX
+                        </div>
+                        <div class="p-2 rounded bg-white/5 text-white/60">
+                            <span class="text-blue-400">•</span> SDR technology
+                        </div>
+                        <div class="p-2 rounded bg-white/5 text-white/60">
+                            <span class="text-blue-400">•</span> Cognitive monitoring
+                        </div>
+                        <div class="p-2 rounded bg-white/5 text-white/60">
+                            <span class="text-blue-400">•</span> Overlapping coverage
+                        </div>
+                    </div>
+                    <div class="mt-3 pt-3 border-t border-white/5">
+                        <div class="text-xs text-white/40">Sensitivity</div>
+                        <div class="text-lg font-display font-bold text-blue-400">-137 dBm</div>
+                    </div>
+                </div>
+                
+                <!-- Connection Arrow -->
+                <div class="hidden lg:flex items-center justify-center">
+                    <div class="flex flex-col items-center gap-2">
+                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="rgba(107,92,231,0.5)" stroke-width="1.5">
+                            <path d="M5 12h14M12 5l7 7-7 7"/>
+                        </svg>
+                        <div class="text-xs text-purple-400/60 font-mono">IP Backhaul</div>
+                        <div class="text-xs text-white/30">3G/4G/Ethernet</div>
+                    </div>
+                </div>
+                
+                <!-- Cloud Backend -->
+                <div class="stat-card p-5 flex flex-col">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500/20 to-pink-500/20 flex items-center justify-center float-animation" style="animation-delay: 1s;">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#6B5CE7" stroke-width="1.5">
+                                <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="font-display font-semibold text-white">Cloud Backend</h3>
+                            <div class="text-xs text-purple-400">Processing</div>
+                        </div>
+                    </div>
+                    <div class="flex-1 space-y-2 text-sm">
+                        <div class="p-2 rounded bg-white/5 text-white/60">
+                            <span class="text-purple-400">•</span> Message processing
+                        </div>
+                        <div class="p-2 rounded bg-white/5 text-white/60">
+                            <span class="text-purple-400">•</span> Deduplication
+                        </div>
+                        <div class="p-2 rounded bg-white/5 text-white/60">
+                            <span class="text-purple-400">•</span> REST API delivery
+                        </div>
+                        <div class="p-2 rounded bg-white/5 text-white/60">
+                            <span class="text-purple-400">•</span> Remote updates
+                        </div>
+                    </div>
+                    <div class="mt-3 pt-3 border-t border-white/5">
+                        <div class="text-xs text-white/40">API Type</div>
+                        <div class="text-lg font-display font-bold text-purple-400">REST</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Star Topology Benefits -->
+            <div class="stat-card p-5">
+                <h3 class="text-lg font-display font-semibold text-white mb-4">Star Topology Architecture Benefits</h3>
+                <div class="grid md:grid-cols-5 gap-4">
+                    <div class="text-center p-4 rounded-xl bg-white/5 hover:bg-cyan-500/10 transition-colors cursor-pointer group">
+                        <div class="text-cyan-400 font-display font-bold text-lg mb-1 group-hover:scale-110 transition-transform">Simplicity</div>
+                        <div class="text-xs text-white/40">No mesh routing</div>
+                        <div class="text-xs text-white/30 mt-2">Zero routing tables</div>
+                    </div>
+                    <div class="text-center p-4 rounded-xl bg-white/5 hover:bg-blue-500/10 transition-colors cursor-pointer group">
+                        <div class="text-blue-400 font-display font-bold text-lg mb-1 group-hover:scale-110 transition-transform">Low Power</div>
+                        <div class="text-xs text-white/40">Deep sleep mode</div>
+                        <div class="text-xs text-white/30 mt-2">99.9% idle time</div>
+                    </div>
+                    <div class="text-center p-4 rounded-xl bg-white/5 hover:bg-purple-500/10 transition-colors cursor-pointer group">
+                        <div class="text-purple-400 font-display font-bold text-lg mb-1 group-hover:scale-110 transition-transform">Reliability</div>
+                        <div class="text-xs text-white/40">Redundant paths</div>
+                        <div class="text-xs text-white/30 mt-2">Multiple base stations</div>
+                    </div>
+                    <div class="text-center p-4 rounded-xl bg-white/5 hover:bg-green-500/10 transition-colors cursor-pointer group">
+                        <div class="text-green-400 font-display font-bold text-lg mb-1 group-hover:scale-110 transition-transform">Scalability</div>
+                        <div class="text-xs text-white/40">Millions of devices</div>
+                        <div class="text-xs text-white/30 mt-2">Per base station</div>
+                    </div>
+                    <div class="text-center p-4 rounded-xl bg-white/5 hover:bg-orange-500/10 transition-colors cursor-pointer group">
+                        <div class="text-orange-400 font-display font-bold text-lg mb-1 group-hover:scale-110 transition-transform">Diversity</div>
+                        <div class="text-xs text-white/40">Cooperative RX</div>
+                        <div class="text-xs text-white/30 mt-2">Improved reliability</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 5: LPWAN Comparison -->
+    <div class="slide" id="slide5">
+        <div class="gradient-bg">
+            <div class="gradient-orb gradient-orb-3" style="opacity: 0.15;"></div>
+            <div class="grid-lines"></div>
+        </div>
+        <div class="content">
+            <div class="flex items-center gap-3 mb-6">
+                <span class="badge"><span class="pulse-dot"></span>Section 4</span>
+                <span class="text-white/30 text-sm">Technology Comparison</span>
+            </div>
+            <h2 class="text-4xl md:text-5xl mb-6 text-white font-display font-bold">LPWAN Technology Comparison</h2>
+            
+            <div class="grid lg:grid-cols-4 gap-4 mb-5">
+                <!-- Sigfox -->
+                <div class="stat-card p-5 border-l-4 border-l-cyan-500">
+                    <div class="flex items-center gap-2 mb-4">
+                        <div class="w-8 h-8 rounded-lg bg-cyan-500/20 flex items-center justify-center">
+                            <span class="text-cyan-400 font-display font-bold text-sm">S</span>
+                        </div>
+                        <h3 class="font-display font-semibold text-white">Sigfox</h3>
+                    </div>
+                    <div class="space-y-3 text-sm">
+                        <div class="flex justify-between">
+                            <span class="text-white/50">Network</span>
+                            <span class="text-cyan-400">Public</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-white/50">Spectrum</span>
+                            <span class="text-white/80">ISM Unlicensed</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-white/50">Payload</span>
+                            <span class="text-white/80 font-mono">12 B</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-white/50">Data Rate</span>
+                            <span class="text-white/80 font-mono">0.1-0.6 kbps</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-white/50">Battery</span>
+                            <span class="text-green-400 font-medium">10+ years</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-white/50">Cost</span>
+                            <span class="text-green-400 font-medium">Very Low</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- LoRaWAN -->
+                <div class="stat-card p-5 border-l-4 border-l-blue-500">
+                    <div class="flex items-center gap-2 mb-4">
+                        <div class="w-8 h-8 rounded-lg bg-blue-500/20 flex items-center justify-center">
+                            <span class="text-blue-400 font-display font-bold text-sm">L</span>
+                        </div>
+                        <h3 class="font-display font-semibold text-white">LoRaWAN</h3>
+                    </div>
+                    <div class="space-y-3 text-sm">
+                        <div class="flex justify-between">
+                            <span class="text-white/50">Network</span>
+                            <span class="text-blue-400">Public/Private</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-white/50">Spectrum</span>
+                            <span class="text-white/80">ISM Unlicensed</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-white/50">Payload</span>
+                            <span class="text-white/80 font-mono">242 B</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-white/50">Data Rate</span>
+                            <span class="text-white/80 font-mono">0.3-50 kbps</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-white/50">Battery</span>
+                            <span class="text-green-400 font-medium">10+ years</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-white/50">Cost</span>
+                            <span class="text-yellow-400 font-medium">Low</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- NB-IoT -->
+                <div class="stat-card p-5 border-l-4 border-l-purple-500">
+                    <div class="flex items-center gap-2 mb-4">
+                        <div class="w-8 h-8 rounded-lg bg-purple-500/20 flex items-center justify-center">
+                            <span class="text-purple-400 font-display font-bold text-sm">N</span>
+                        </div>
+                        <h3 class="font-display font-semibold text-white">NB-IoT</h3>
+                    </div>
+                    <div class="space-y-3 text-sm">
+                        <div class="flex justify-between">
+                            <span class="text-white/50">Network</span>
+                            <span class="text-purple-400">Cellular</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-white/50">Spectrum</span>
+                            <span class="text-white/80">Licensed LTE</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-white/50">Payload</span>
+                            <span class="text-white/80 font-mono">1600 B</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-white/50">Data Rate</span>
+                            <span class="text-white/80 font-mono">250 kbps</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-white/50">Battery</span>
+                            <span class="text-yellow-400 font-medium">5-10 years</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-white/50">Cost</span>
+                            <span class="text-orange-400 font-medium">Medium</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- LTE-M -->
+                <div class="stat-card p-5 border-l-4 border-l-green-500">
+                    <div class="flex items-center gap-2 mb-4">
+                        <div class="w-8 h-8 rounded-lg bg-green-500/20 flex items-center justify-center">
+                            <span class="text-green-400 font-display font-bold text-sm">M</span>
+                        </div>
+                        <h3 class="font-display font-semibold text-white">LTE-M</h3>
+                    </div>
+                    <div class="space-y-3 text-sm">
+                        <div class="flex justify-between">
+                            <span class="text-white/50">Network</span>
+                            <span class="text-green-400">Cellular</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-white/50">Spectrum</span>
+                            <span class="text-white/80">Licensed LTE</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-white/50">Payload</span>
+                            <span class="text-white/80 font-mono">Unlimited</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-white/50">Data Rate</span>
+                            <span class="text-white/80 font-mono">1 Mbps</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-white/50">Battery</span>
+                            <span class="text-yellow-400 font-medium">5-10 years</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-white/50">Cost</span>
+                            <span class="text-orange-400 font-medium">Medium</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Comparison Insights -->
+            <div class="grid lg:grid-cols-3 gap-5 flex-1">
+                <div class="stat-card p-5">
+                    <h3 class="text-base font-display font-semibold text-cyan-400 mb-3">Sigfox Best For</h3>
+                    <ul class="space-y-2 text-sm">
+                        <li class="flex items-center gap-2 text-white/60">
+                            <span class="text-green-400">→</span> Simple sensor data
+                        </li>
+                        <li class="flex items-center gap-2 text-white/60">
+                            <span class="text-green-400">→</span> Asset tracking
+                        </li>
+                        <li class="flex items-center gap-2 text-white/60">
+                            <span class="text-green-400">→</span> Global deployments
+                        </li>
+                        <li class="flex items-center gap-2 text-white/60">
+                            <span class="text-green-400">→</span> Cost-sensitive projects
+                        </li>
+                        <li class="flex items-center gap-2 text-white/60">
+                            <span class="text-green-400">→</span> Ultra-low power needs
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="stat-card p-5">
+                    <h3 class="text-base font-display font-semibold text-blue-400 mb-3">LoRaWAN Best For</h3>
+                    <ul class="space-y-2 text-sm">
+                        <li class="flex items-center gap-2 text-white/60">
+                            <span class="text-blue-400">→</span> Private networks
+                        </li>
+                        <li class="flex items-center gap-2 text-white/60">
+                            <span class="text-blue-400">→</span> Larger payloads
+                        </li>
+                        <li class="flex items-center gap-2 text-white/60">
+                            <span class="text-blue-400">→</span> Bidirectional comm
+                        </li>
+                        <li class="flex items-center gap-2 text-white/60">
+                            <span class="text-blue-400">→</span> Campus deployments
+                        </li>
+                        <li class="flex items-center gap-2 text-white/60">
+                            <span class="text-blue-400">→</span> Custom coverage areas
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="stat-card p-5">
+                    <h3 class="text-base font-display font-semibold text-purple-400 mb-3">Cellular Best For</h3>
+                    <ul class="space-y-2 text-sm">
+                        <li class="flex items-center gap-2 text-white/60">
+                            <span class="text-purple-400">→</span> High data rates
+                        </li>
+                        <li class="flex items-center gap-2 text-white/60">
+                            <span class="text-purple-400">→</span> Real-time apps
+                        </li>
+                        <li class="flex items-center gap-2 text-white/60">
+                            <span class="text-purple-400">→</span> Deep indoor
+                        </li>
+                        <li class="flex items-center gap-2 text-white/60">
+                            <span class="text-purple-400">→</span> QoS requirements
+                        </li>
+                        <li class="flex items-center gap-2 text-white/60">
+                            <span class="text-purple-400">→</span> Voice capability
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 6: Historical Timeline -->
+    <div class="slide" id="slide6">
+        <div class="gradient-bg">
+            <div class="gradient-orb gradient-orb-2" style="opacity: 0.15;"></div>
+            <div class="grid-lines"></div>
+        </div>
+        <div class="content">
+            <div class="flex items-center gap-3 mb-6">
+                <span class="badge"><span class="pulse-dot"></span>Section 2.2</span>
+                <span class="text-white/30 text-sm">History & Development</span>
+            </div>
+            <h2 class="text-4xl md:text-5xl mb-8 text-white font-display font-bold">Historical Development</h2>
+            
+            <div class="grid lg:grid-cols-2 gap-8 flex-1">
+                <!-- Timeline -->
+                <div class="space-y-1">
+                    <div class="timeline-item" style="animation-delay: 0.1s;">
+                        <div class="stat-card p-5 ml-2">
+                            <div class="flex items-center gap-3 mb-2">
+                                <span class="text-cyan-400 font-display font-bold text-xl">2010</span>
+                                <span class="text-xs text-white/40">Foundation</span>
+                            </div>
+                            <p class="text-white/60 text-sm">Ludovic Le Moan and Christophe Fourtet founded Sigfox in Labège, France with vision of connecting the Internet of Things.</p>
+                            <div class="mt-3 flex gap-2">
+                                <span class="text-xs px-2 py-1 rounded bg-cyan-500/10 text-cyan-400">France</span>
+                                <span class="text-xs px-2 py-1 rounded bg-white/5 text-white/40">Startup</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="timeline-item" style="animation-delay: 0.2s;">
+                        <div class="stat-card p-5 ml-2">
+                            <div class="flex items-center gap-3 mb-2">
+                                <span class="text-blue-400 font-display font-bold text-xl">2015</span>
+                                <span class="text-xs text-white/40">Expansion</span>
+                            </div>
+                            <p class="text-white/60 text-sm">Network expanded to multiple European countries. Significant venture capital investment for global expansion.</p>
+                            <div class="mt-3 flex gap-2">
+                                <span class="text-xs px-2 py-1 rounded bg-blue-500/10 text-blue-400">Europe</span>
+                                <span class="text-xs px-2 py-1 rounded bg-white/5 text-white/40">VC Funding</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="timeline-item" style="animation-delay: 0.3s;">
+                        <div class="stat-card p-5 ml-2">
+                            <div class="flex items-center gap-3 mb-2">
+                                <span class="text-purple-400 font-display font-bold text-xl">2022</span>
+                                <span class="text-xs text-white/40">Acquisition</span>
+                            </div>
+                            <p class="text-white/60 text-sm">UnaBiz, Singapore-based IoT service provider, acquired Sigfox — strengthening global LPWAN market position.</p>
+                            <div class="mt-3 flex gap-2">
+                                <span class="text-xs px-2 py-1 rounded bg-purple-500/10 text-purple-400">UnaBiz</span>
+                                <span class="text-xs px-2 py-1 rounded bg-white/5 text-white/40">Singapore</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="timeline-item" style="animation-delay: 0.4s;">
+                        <div class="stat-card p-5 ml-2">
+                            <div class="flex items-center gap-3 mb-2">
+                                <span class="text-green-400 font-display font-bold text-xl">Today</span>
+                                <span class="text-xs text-white/40">Global Leader</span>
+                            </div>
+                            <p class="text-white/60 text-sm">Continuous technology evolution with backward compatibility. Network deployed across 75+ countries worldwide.</p>
+                            <div class="mt-3 flex gap-2">
+                                <span class="text-xs px-2 py-1 rounded bg-green-500/10 text-green-400">75+ Countries</span>
+                                <span class="text-xs px-2 py-1 rounded bg-white/5 text-white/40">1.3B People</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Market Gap Analysis -->
+                <div class="flex flex-col gap-5">
+                    <div class="stat-card p-5 flex-1">
+                        <h3 class="text-lg font-display font-semibold text-white mb-4">The Market Gap (2010)</h3>
+                        <div class="space-y-4">
+                            <div class="p-4 rounded-xl bg-red-500/10 border border-red-500/20">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="2">
+                                        <circle cx="12" cy="12" r="10"/>
+                                        <line x1="15" y1="9" x2="9" y2="15"/>
+                                        <line x1="9" y1="9" x2="15" y2="15"/>
+                                    </svg>
+                                    <span class="text-red-400 font-medium">Cellular Networks</span>
+                                </div>
+                                <ul class="text-sm text-white/50 space-y-1">
+                                    <li>• High power consumption</li>
+                                    <li>• Expensive infrastructure</li>
+                                    <li>• Complex protocols</li>
+                                    <li>• High device costs</li>
+                                </ul>
+                            </div>
+                            
+                            <div class="p-4 rounded-xl bg-orange-500/10 border border-orange-500/20">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F97316" stroke-width="2">
+                                        <circle cx="12" cy="12" r="10"/>
+                                        <line x1="12" y1="8" x2="12" y2="12"/>
+                                        <line x1="12" y1="16" x2="12.01" y2="16"/>
+                                    </svg>
+                                    <span class="text-orange-400 font-medium">Short-Range (WiFi/BT)</span>
+                                </div>
+                                <ul class="text-sm text-white/50 space-y-1">
+                                    <li>• Limited range</li>
+                                    <li>• High power needs</li>
+                                    <li>• Not suitable for outdoor</li>
+                                    <li>• Infrastructure dependent</li>
+                                </ul>
+                            </div>
+                            
+                            <div class="p-4 rounded-xl bg-green-500/10 border border-green-500/20">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#22C55E" stroke-width="2">
+                                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                                        <polyline points="22 4 12 14.01 9 11.01"/>
+                                    </svg>
+                                    <span class="text-green-400 font-medium">Sigfox Solution</span>
+                                </div>
+                                <ul class="text-sm text-white/50 space-y-1">
+                                    <li>• Ultra-low power</li>
+                                    <li>• Long range (40km+)</li>
+                                    <li>• Simple protocol</li>
+                                    <li>• Low device cost</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 7: Applications Overview -->
+    <div class="slide" id="slide7">
+        <div class="gradient-bg">
+            <div class="gradient-orb gradient-orb-1" style="opacity: 0.15;"></div>
+            <div class="hex-pattern"></div>
+        </div>
+        <div class="content">
+            <div class="flex items-center gap-3 mb-6">
+                <span class="badge"><span class="pulse-dot"></span>Section 5</span>
+                <span class="text-white/30 text-sm">Applications</span>
+            </div>
+            <h2 class="text-4xl md:text-5xl mb-6 text-white font-display font-bold">Applications & Use Cases</h2>
+            
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
+                <div class="stat-card p-5 group hover:border-cyan-500/40 transition-all">
+                    <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-cyan-500/20 to-blue-500/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#00D4FF" stroke-width="1.5">
+                            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                            <polyline points="9 22 9 12 15 12 15 22"/>
+                        </svg>
+                    </div>
+                    <h3 class="font-display font-semibold text-white mb-2">Smart City</h3>
+                    <p class="text-white/40 text-sm mb-3">Urban infrastructure optimization</p>
+                    <div class="space-y-1 text-xs text-white/30">
+                        <div>• Waste management</div>
+                        <div>• Smart parking</div>
+                        <div>• Air quality monitoring</div>
+                        <div>• Street lighting</div>
+                    </div>
+                </div>
+                
+                <div class="stat-card p-5 group hover:border-blue-500/40 transition-all">
+                    <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#0066FF" stroke-width="1.5">
+                            <rect x="1" y="3" width="15" height="13"/>
+                            <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/>
+                            <circle cx="5.5" cy="18.5" r="2.5"/>
+                            <circle cx="18.5" cy="18.5" r="2.5"/>
+                        </svg>
+                    </div>
+                    <h3 class="font-display font-semibold text-white mb-2">Asset Tracking</h3>
+                    <p class="text-white/40 text-sm mb-3">Global supply chain visibility</p>
+                    <div class="space-y-1 text-xs text-white/30">
+                        <div>• Container tracking</div>
+                        <div>• Fleet management</div>
+                        <div>• Cold chain</div>
+                        <div>• Equipment monitoring</div>
+                    </div>
+                </div>
+                
+                <div class="stat-card p-5 group hover:border-green-500/40 transition-all">
+                    <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-green-500/20 to-cyan-500/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#22C55E" stroke-width="1.5">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                        </svg>
+                    </div>
+                    <h3 class="font-display font-semibold text-white mb-2">Smart Agriculture</h3>
+                    <p class="text-white/40 text-sm mb-3">Precision farming solutions</p>
+                    <div class="space-y-1 text-xs text-white/30">
+                        <div>• Soil moisture</div>
+                        <div>• Weather stations</div>
+                        <div>• Livestock tracking</div>
+                        <div>• Crop monitoring</div>
+                    </div>
+                </div>
+                
+                <div class="stat-card p-5 group hover:border-orange-500/40 transition-all">
+                    <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-orange-500/20 to-red-500/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#F97316" stroke-width="1.5">
+                            <path d="M2 20h20M5 20V8l7-4 7 4v12"/>
+                            <rect x="9" y="12" width="6" height="8"/>
+                        </svg>
+                    </div>
+                    <h3 class="font-display font-semibold text-white mb-2">Industrial IoT</h3>
+                    <p class="text-white/40 text-sm mb-3">Manufacturing optimization</p>
+                    <div class="space-y-1 text-xs text-white/30">
+                        <div>• Equipment monitoring</div>
+                        <div>• Tank levels</div>
+                        <div>• Safety systems</div>
+                        <div>• Predictive maintenance</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Use Case Profiles -->
+            <div class="grid lg:grid-cols-3 gap-5 flex-1">
+                <div class="stat-card p-5">
+                    <h3 class="text-base font-display font-semibold text-cyan-400 mb-3">Ideal Use Case Profile</h3>
+                    <div class="space-y-3">
+                        <div class="flex items-center gap-3 p-3 rounded-lg bg-white/5">
+                            <div class="w-8 h-8 rounded-lg bg-cyan-500/20 flex items-center justify-center">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00D4FF" stroke-width="2">
+                                    <polyline points="20 6 9 17 4 12"/>
+                                </svg>
+                            </div>
+                            <span class="text-white/70 text-sm">Periodic sensor readings</span>
+                        </div>
+                        <div class="flex items-center gap-3 p-3 rounded-lg bg-white/5">
+                            <div class="w-8 h-8 rounded-lg bg-cyan-500/20 flex items-center justify-center">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00D4FF" stroke-width="2">
+                                    <polyline points="20 6 9 17 4 12"/>
+                                </svg>
+                            </div>
+                            <span class="text-white/70 text-sm">Simple status updates</span>
+                        </div>
+                        <div class="flex items-center gap-3 p-3 rounded-lg bg-white/5">
+                            <div class="w-8 h-8 rounded-lg bg-cyan-500/20 flex items-center justify-center">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00D4FF" stroke-width="2">
+                                    <polyline points="20 6 9 17 4 12"/>
+                                </svg>
+                            </div>
+                            <span class="text-white/70 text-sm">Location tracking</span>
+                        </div>
+                        <div class="flex items-center gap-3 p-3 rounded-lg bg-white/5">
+                            <div class="w-8 h-8 rounded-lg bg-cyan-500/20 flex items-center justify-center">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#00D4FF" stroke-width="2">
+                                    <polyline points="20 6 9 17 4 12"/>
+                                </svg>
+                            </div>
+                            <span class="text-white/70 text-sm">No real-time requirements</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="stat-card p-5">
+                    <h3 class="text-base font-display font-semibold text-blue-400 mb-3">Message Payload Example</h3>
+                    <div class="code-block text-xs">
+                        <span class="comment">// Typical Sensor Payload (8 bytes)</span><br>
+                        <span class="keyword">struct</span> SensorData {<br>
+                        &nbsp;&nbsp;<span class="keyword">uint16_t</span> temperature; <span class="comment">// 2 bytes</span><br>
+                        &nbsp;&nbsp;<span class="keyword">uint16_t</span> humidity; <span class="comment">// 2 bytes</span><br>
+                        &nbsp;&nbsp;<span class="keyword">uint16_t</span> battery_mv; <span class="comment">// 2 bytes</span><br>
+                        &nbsp;&nbsp;<span class="keyword">uint8_t</span> status; <span class="comment">// 1 byte</span><br>
+                        &nbsp;&nbsp;<span class="keyword">uint8_t</span> counter; <span class="comment">// 1 byte</span><br>
+                        }; <span class="comment">// Total: 8 bytes</span>
+                    </div>
+                </div>
+                
+                <div class="stat-card p-5">
+                    <h3 class="text-base font-display font-semibold text-purple-400 mb-3">Coverage Map</h3>
+                    <div class="interactive-map">
+                        <!-- Europe -->
+                        <div class="map-dot" style="top: 25%; left: 48%;" title="Europe">
+                            <span class="absolute -top-6 left-1/2 -translate-x-1/2 text-xs text-cyan-400 whitespace-nowrap opacity-0 hover:opacity-100 transition-opacity">Europe</span>
+                        </div>
+                        <!-- Americas -->
+                        <div class="map-dot" style="top: 35%; left: 20%;" title="Americas"></div>
+                        <!-- Asia -->
+                        <div class="map-dot" style="top: 30%; left: 75%;" title="Asia"></div>
+                        <!-- Africa -->
+                        <div class="map-dot" style="top: 50%; left: 50%;" title="Africa"></div>
+                        <!-- Australia -->
+                        <div class="map-dot" style="top: 70%; left: 82%;" title="Australia"></div>
+                    </div>
+                    <div class="mt-3 flex items-center justify-center gap-4 text-xs">
+                        <div class="flex items-center gap-1">
+                            <div class="w-2 h-2 rounded-full bg-cyan-400"></div>
+                            <span class="text-white/40">Active Coverage</span>
+                        </div>
+                        <div class="text-cyan-400 font-mono">75+ Countries</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 8: Smart City Deep Dive -->
+    <div class="slide" id="slide8">
+        <div class="gradient-bg">
+            <div class="gradient-orb gradient-orb-2" style="opacity: 0.12;"></div>
+            <div class="grid-lines"></div>
+        </div>
+        <div class="content">
+            <div class="flex items-center gap-3 mb-6">
+                <span class="badge"><span class="pulse-dot"></span>Section 5.1</span>
+                <span class="text-white/30 text-sm">Smart City Applications</span>
+            </div>
+            <h2 class="text-4xl md:text-5xl mb-6 text-white font-display font-bold">Smart City Deep Dive</h2>
+            
+            <div class="grid lg:grid-cols-2 gap-5 mb-5">
+                <!-- Waste Management -->
+                <div class="stat-card expandable-card" onclick="this.classList.toggle('expanded')">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-4">
+                            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-green-500/20 to-cyan-500/20 flex items-center justify-center">
+                                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#22C55E" stroke-width="1.5">
+                                    <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-display font-semibold text-white">Waste Management</h3>
+                                <p class="text-white/40 text-sm">Fill-level monitoring & route optimization</p>
+                            </div>
+                        </div>
+                        <svg class="expand-icon w-5 h-5 text-white/30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6 9 12 15 18 9"/>
+                        </svg>
+                    </div>
+                    <div class="expandable-content">
+                        <div class="mt-4 pt-4 border-t border-white/5 grid md:grid-cols-2 gap-4">
+                            <div>
+                                <h4 class="text-cyan-400 text-sm font-medium mb-2">Data Transmitted</h4>
+                                <ul class="text-xs text-white/50 space-y-1">
+                                    <li>• Fill level percentage (1 byte)</li>
+                                    <li>• Battery voltage (2 bytes)</li>
+                                    <li>• Temperature (2 bytes)</li>
+                                    <li>• Timestamp (4 bytes)</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h4 class="text-green-400 text-sm font-medium mb-2">Benefits</h4>
+                                <ul class="text-xs text-white/50 space-y-1">
+                                    <li>• 30-50% route reduction</li>
+                                    <li>• Lower fuel costs</li>
+                                    <li>• Reduced emissions</li>
+                                    <li>• Better service quality</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Smart Parking -->
+                <div class="stat-card expandable-card" onclick="this.classList.toggle('expanded')">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-4">
+                            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center">
+                                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#0066FF" stroke-width="1.5">
+                                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                                    <path d="M9 17V7h4a3 3 0 0 1 0 6H9"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-display font-semibold text-white">Smart Parking</h3>
+                                <p class="text-white/40 text-sm">Real-time availability detection</p>
+                            </div>
+                        </div>
+                        <svg class="expand-icon w-5 h-5 text-white/30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6 9 12 15 18 9"/>
+                        </svg>
+                    </div>
+                    <div class="expandable-content">
+                        <div class="mt-4 pt-4 border-t border-white/5">
+                            <div class="grid md:grid-cols-3 gap-3 text-center">
+                                <div class="p-3 rounded-lg bg-white/5">
+                                    <div class="text-cyan-400 font-mono text-lg">1 byte</div>
+                                    <div class="text-xs text-white/40">Status (occupied/free)</div>
+                                </div>
+                                <div class="p-3 rounded-lg bg-white/5">
+                                    <div class="text-blue-400 font-mono text-lg">2 msg/hr</div>
+                                    <div class="text-xs text-white/40">Typical frequency</div>
+                                </div>
+                                <div class="p-3 rounded-lg bg-white/5">
+                                    <div class="text-green-400 font-mono text-lg">5 years</div>
+                                    <div class="text-xs text-white/40">Battery life</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Environmental Monitoring -->
+                <div class="stat-card expandable-card" onclick="this.classList.toggle('expanded')">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-4">
+                            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-cyan-500/20 to-green-500/20 flex items-center justify-center">
+                                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#00D4FF" stroke-width="1.5">
+                                    <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9z"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-display font-semibold text-white">Environmental Monitoring</h3>
+                                <p class="text-white/40 text-sm">Air quality & noise levels</p>
+                            </div>
+                        </div>
+                        <svg class="expand-icon w-5 h-5 text-white/30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6 9 12 15 18 9"/>
+                        </svg>
+                    </div>
+                    <div class="expandable-content">
+                        <div class="mt-4 pt-4 border-t border-white/5">
+                            <div class="flex flex-wrap gap-2">
+                                <span class="text-xs px-3 py-1 rounded-full bg-white/5 text-white/60">CO2 levels</span>
+                                <span class="text-xs px-3 py-1 rounded-full bg-white/5 text-white/60">PM2.5/PM10</span>
+                                <span class="text-xs px-3 py-1 rounded-full bg-white/5 text-white/60">NO2</span>
+                                <span class="text-xs px-3 py-1 rounded-full bg-white/5 text-white/60">O3</span>
+                                <span class="text-xs px-3 py-1 rounded-full bg-white/5 text-white/60">Noise dB</span>
+                                <span class="text-xs px-3 py-1 rounded-full bg-white/5 text-white/60">Humidity</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Street Lighting -->
+                <div class="stat-card expandable-card" onclick="this.classList.toggle('expanded')">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-4">
+                            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-yellow-500/20 to-orange-500/20 flex items-center justify-center">
+                                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#EAB308" stroke-width="1.5">
+                                    <path d="M9 18h6M10 22h4M12 2v1M4.22 4.22l.7.7M1 12h1M4.22 19.78l.7-.7M20.78 4.22l-.7.7M23 12h-1M20.78 19.78l-.7-.7M15 9a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-display font-semibold text-white">Street Lighting</h3>
+                                <p class="text-white/40 text-sm">Maintenance alerts & energy optimization</p>
+                            </div>
+                        </div>
+                        <svg class="expand-icon w-5 h-5 text-white/30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6 9 12 15 18 9"/>
+                        </svg>
+                    </div>
+                    <div class="expandable-content">
+                        <div class="mt-4 pt-4 border-t border-white/5">
+                            <div class="flex justify-between items-center text-sm">
+                                <span class="text-white/50">Energy savings potential:</span>
+                                <span class="text-green-400 font-mono text-lg">30-50%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Interactive Calculator -->
+            <div class="stat-card p-5 flex-1">
+                <h3 class="text-lg font-display font-semibold text-white mb-4">Message Calculator</h3>
+                <div class="grid md:grid-cols-4 gap-6 items-center">
+                    <div>
+                        <label class="text-xs text-white/40 mb-2 block">Updates per day</label>
+                        <input type="range" min="1" max="140" value="24" class="range-slider" id="msgSlider" oninput="updateCalc()">
+                        <div class="text-center mt-2 font-mono text-cyan-400" id="msgValue">24</div>
+                    </div>
+                    <div>
+                        <label class="text-xs text-white/40 mb-2 block">Payload size (bytes)</label>
+                        <input type="range" min="1" max="12" value="8" class="range-slider" id="payloadSlider" oninput="updateCalc()">
+                        <div class="text-center mt-2 font-mono text-blue-400" id="payloadValue">8</div>
+                    </div>
+                    <div class="text-center p-4 rounded-xl bg-white/5">
+                        <div class="text-xs text-white/40 mb-1">Daily Data</div>
+                        <div class="text-2xl font-display font-bold text-purple-400 font-mono" id="dailyData">192 B</div>
+                    </div>
+                    <div class="text-center p-4 rounded-xl bg-white/5">
+                        <div class="text-xs text-white/40 mb-1">Battery Life Est.</div>
+                        <div class="text-2xl font-display font-bold text-green-400" id="batteryEst">15+ years</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 9: Asset Tracking -->
+    <div class="slide" id="slide9">
+        <div class="gradient-bg">
+            <div class="gradient-orb gradient-orb-1" style="opacity: 0.12;"></div>
+            <div class="grid-lines"></div>
+        </div>
+        <div class="content">
+            <div class="flex items-center gap-3 mb-6">
+                <span class="badge"><span class="pulse-dot"></span>Section 5.2</span>
+                <span class="text-white/30 text-sm">Asset Tracking</span>
+            </div>
+            <h2 class="text-4xl md:text-5xl mb-6 text-white font-display font-bold">Asset Tracking & Logistics</h2>
+            
+            <div class="grid lg:grid-cols-3 gap-5 flex-1">
+                <div class="lg:col-span-2 space-y-5">
+                    <!-- Tracking Types -->
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div class="stat-card p-5">
+                            <h3 class="text-base font-display font-semibold text-cyan-400 mb-3">High-Value Assets</h3>
+                            <ul class="space-y-2 text-sm text-white/60">
+                                <li class="flex items-start gap-2">
+                                    <span class="text-cyan-400 mt-1">•</span>
+                                    <span>Shipping containers, construction equipment</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <span class="text-cyan-400 mt-1">•</span>
+                                    <span>Medical devices, electronics</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <span class="text-cyan-400 mt-1">•</span>
+                                    <span>Location + status monitoring</span>
+                                </li>
+                            </ul>
+                        </div>
+                        
+                        <div class="stat-card p-5">
+                            <h3 class="text-base font-display font-semibold text-blue-400 mb-3">Low-Value Assets</h3>
+                            <ul class="space-y-2 text-sm text-white/60">
+                                <li class="flex items-start gap-2">
+                                    <span class="text-blue-400 mt-1">•</span>
+                                    <span>Pallets, bins, returnable packaging</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <span class="text-blue-400 mt-1">•</span>
+                                    <span>Economically viable with low device cost</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <span class="text-blue-400 mt-1">•</span>
+                                    <span>Disposable tracking devices</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <!-- GPS Payload Structure -->
+                    <div class="stat-card p-5">
+                        <h3 class="text-base font-display font-semibold text-white mb-3">GPS Location Payload Structure</h3>
+                        <div class="code-block text-xs mb-4">
+                            <span class="comment">// Location Message (12 bytes total)</span><br>
+                            <span class="keyword">struct</span> LocationMsg {<br>
+                            &nbsp;&nbsp;<span class="keyword">int32_t</span> latitude; <span class="comment">// 4 bytes (scaled)</span><br>
+                            &nbsp;&nbsp;<span class="keyword">int32_t</span> longitude; <span class="comment">// 4 bytes (scaled)</span><br>
+                            &nbsp;&nbsp;<span class="keyword">uint8_t</span> battery; <span class="comment">// 1 byte (0-100%)</span><br>
+                            &nbsp;&nbsp;<span class="keyword">uint8_t</span> status; <span class="comment">// 1 byte (flags)</span><br>
+                            &nbsp;&nbsp;<span class="keyword">uint16_t</span> temperature; <span class="comment">// 2 bytes (optional)</span><br>
+                            }; <span class="comment">// Exactly 12 bytes</span>
+                        </div>
+                        <div class="grid grid-cols-4 gap-3 text-center text-xs">
+                            <div class="p-2 rounded bg-cyan-500/10 border border-cyan-500/20">
+                                <div class="text-cyan-400 font-mono">4 B</div>
+                                <div class="text-white/40">Latitude</div>
+                            </div>
+                            <div class="p-2 rounded bg-blue-500/10 border border-blue-500/20">
+                                <div class="text-blue-400 font-mono">4 B</div>
+                                <div class="text-white/40">Longitude</div>
+                            </div>
+                            <div class="p-2 rounded bg-purple-500/10 border border-purple-500/20">
+                                <div class="text-purple-400 font-mono">2 B</div>
+                                <div class="text-white/40">Status</div>
+                            </div>
+                            <div class="p-2 rounded bg-green-500/10 border border-green-500/20">
+                                <div class="text-green-400 font-mono">2 B</div>
+                                <div class="text-white/40">Sensors</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Cold Chain -->
+                <div class="space-y-5">
+                    <div class="stat-card p-5 border-l-4 border-l-cyan-500">
+                        <h3 class="text-base font-display font-semibold text-cyan-400 mb-3">Cold Chain Monitoring</h3>
+                        <p class="text-white/50 text-sm mb-4">Temperature-sensitive logistics for pharmaceuticals and food transport.</p>
+                        <div class="space-y-3">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-white/50">Temperature range</span>
+                                <span class="text-cyan-400 font-mono">-40°C to +85°C</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-white/50">Accuracy</span>
+                                <span class="text-cyan-400 font-mono">±0.5°C</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-white/50">Alerts</span>
+                                <span class="text-cyan-400">Threshold-based</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card p-5 border-l-4 border-l-green-500">
+                        <h3 class="text-base font-display font-semibold text-green-400 mb-3">Global Coverage Benefits</h3>
+                        <ul class="space-y-2 text-sm text-white/60">
+                            <li class="flex items-center gap-2">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22C55E" stroke-width="2">
+                                    <polyline points="20 6 9 17 4 12"/>
+                                </svg>
+                                Seamless cross-border tracking
+                            </li>
+                            <li class="flex items-center gap-2">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22C55E" stroke-width="2">
+                                    <polyline points="20 6 9 17 4 12"/>
+                                </svg>
+                                No roaming agreements
+                            </li>
+                            <li class="flex items-center gap-2">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22C55E" stroke-width="2">
+                                    <polyline points="20 6 9 17 4 12"/>
+                                </svg>
+                                Single subscription model
+                            </li>
+                            <li class="flex items-center gap-2">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22C55E" stroke-width="2">
+                                    <polyline points="20 6 9 17 4 12"/>
+                                </svg>
+                                Predictable connectivity costs
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 10: Advantages & Limitations -->
+    <div class="slide" id="slide10">
+        <div class="gradient-bg">
+            <div class="gradient-orb gradient-orb-2" style="opacity: 0.15;"></div>
+            <div class="hex-pattern"></div>
+        </div>
+        <div class="content">
+            <div class="flex items-center gap-3 mb-6">
+                <span class="badge"><span class="pulse-dot"></span>Section 6</span>
+                <span class="text-white/30 text-sm">Analysis</span>
+            </div>
+            <h2 class="text-4xl md:text-5xl mb-6 text-white font-display font-bold">Advantages & Limitations</h2>
+            
+            <div class="grid lg:grid-cols-2 gap-6 flex-1">
+                <!-- Advantages -->
+                <div class="stat-card p-5 border-t-4 border-t-green-500">
+                    <h3 class="text-xl font-display font-semibold text-green-400 mb-5 flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-green-500/20 flex items-center justify-center">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#22C55E" stroke-width="2">
+                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                                <polyline points="22 4 12 14.01 9 11.01"/>
+                            </svg>
+                        </div>
+                        Key Advantages
+                    </h3>
+                    
+                    <div class="space-y-4">
+                        <div class="p-4 rounded-xl bg-green-500/5 border border-green-500/10 hover:bg-green-500/10 transition-colors">
+                            <div class="flex items-start gap-4">
+                                <div class="w-8 h-8 rounded-lg bg-green-500/20 flex items-center justify-center shrink-0">
+                                    <span class="text-green-400 font-display font-bold">1</span>
+                                </div>
+                                <div>
+                                    <h4 class="text-white font-medium mb-1">Ultra-Low Power</h4>
+                                    <p class="text-white/50 text-sm">10-20 years on single battery. Devices spend 99.9% in deep sleep mode.</p>
+                                    <div class="mt-2 text-xs text-green-400 font-mono">Typical: 25μW average consumption</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="p-4 rounded-xl bg-green-500/5 border border-green-500/10 hover:bg-green-500/10 transition-colors">
+                            <div class="flex items-start gap-4">
+                                <div class="w-8 h-8 rounded-lg bg-green-500/20 flex items-center justify-center shrink-0">
+                                    <span class="text-green-400 font-display font-bold">2</span>
+                                </div>
+                                <div>
+                                    <h4 class="text-white font-medium mb-1">Low Hardware Cost</h4>
+                                    <p class="text-white/50 text-sm">Simple UNB modulation enables minimal RF complexity. Modules from $2.</p>
+                                    <div class="mt-2 text-xs text-green-400 font-mono">vs $10-20 for cellular modules</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="p-4 rounded-xl bg-green-500/5 border border-green-500/10 hover:bg-green-500/10 transition-colors">
+                            <div class="flex items-start gap-4">
+                                <div class="w-8 h-8 rounded-lg bg-green-500/20 flex items-center justify-center shrink-0">
+                                    <span class="text-green-400 font-display font-bold">3</span>
+                                </div>
+                                <div>
+                                    <h4 class="text-white font-medium mb-1">Operational Simplicity</h4>
+                                    <p class="text-white/50 text-sm">No network coordination overhead. Autonomous asynchronous transmission.</p>
+                                    <div class="mt-2 text-xs text-green-400">Zero configuration required</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="p-4 rounded-xl bg-green-500/5 border border-green-500/10 hover:bg-green-500/10 transition-colors">
+                            <div class="flex items-start gap-4">
+                                <div class="w-8 h-8 rounded-lg bg-green-500/20 flex items-center justify-center shrink-0">
+                                    <span class="text-green-400 font-display font-bold">4</span>
+                                </div>
+                                <div>
+                                    <h4 class="text-white font-medium mb-1">Predictable Costs</h4>
+                                    <p class="text-white/50 text-sm">Flat annual fee per device. No data usage billing surprises.</p>
+                                    <div class="mt-2 text-xs text-green-400 font-mono">~$1-2 per device/year</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Limitations -->
+                <div class="stat-card p-5 border-t-4 border-t-orange-500">
+                    <h3 class="text-xl font-display font-semibold text-orange-400 mb-5 flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-orange-500/20 flex items-center justify-center">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F97316" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"/>
+                                <line x1="12" y1="8" x2="12" y2="12"/>
+                                <line x1="12" y1="16" x2="12.01" y2="16"/>
+                            </svg>
+                        </div>
+                        Important Limitations
+                    </h3>
+                    
+                    <div class="space-y-4">
+                        <div class="p-4 rounded-xl bg-orange-500/5 border border-orange-500/10 hover:bg-orange-500/10 transition-colors">
+                            <div class="flex items-start gap-4">
+                                <div class="w-8 h-8 rounded-lg bg-orange-500/20 flex items-center justify-center shrink-0">
+                                    <span class="text-orange-400 font-display font-bold">1</span>
+                                </div>
+                                <div>
+                                    <h4 class="text-white font-medium mb-1">Small Payload Size</h4>
+                                    <p class="text-white/50 text-sm">12 bytes maximum requires efficient encoding and data aggregation.</p>
+                                    <div class="mt-2 text-xs text-orange-400">Not suitable for images/audio</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="p-4 rounded-xl bg-orange-500/5 border border-orange-500/10 hover:bg-orange-500/10 transition-colors">
+                            <div class="flex items-start gap-4">
+                                <div class="w-8 h-8 rounded-lg bg-orange-500/20 flex items-center justify-center shrink-0">
+                                    <span class="text-orange-400 font-display font-bold">2</span>
+                                </div>
+                                <div>
+                                    <h4 class="text-white font-medium mb-1">Message Limits</h4>
+                                    <p class="text-white/50 text-sm">140 uplink / 4 downlink per day. Not suitable for real-time applications.</p>
+                                    <div class="mt-2 text-xs text-orange-400 font-mono">~1 message per 10 minutes max</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="p-4 rounded-xl bg-orange-500/5 border border-orange-500/10 hover:bg-orange-500/10 transition-colors">
+                            <div class="flex items-start gap-4">
+                                <div class="w-8 h-8 rounded-lg bg-orange-500/20 flex items-center justify-center shrink-0">
+                                    <span class="text-orange-400 font-display font-bold">3</span>
+                                </div>
+                                <div>
+                                    <h4 class="text-white font-medium mb-1">Limited Downlink</h4>
+                                    <p class="text-white/50 text-sm">Only 4 downlink messages/day. Constrains remote configuration and OTA updates.</p>
+                                    <div class="mt-2 text-xs text-orange-400">No frequent firmware updates</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="p-4 rounded-xl bg-orange-500/5 border border-orange-500/10 hover:bg-orange-500/10 transition-colors">
+                            <div class="flex items-start gap-4">
+                                <div class="w-8 h-8 rounded-lg bg-orange-500/20 flex items-center justify-center shrink-0">
+                                    <span class="text-orange-400 font-display font-bold">4</span>
+                                </div>
+                                <div>
+                                    <h4 class="text-white font-medium mb-1">Public Network Only</h4>
+                                    <p class="text-white/50 text-sm">Cannot deploy private networks. Dependent on Sigfox coverage availability.</p>
+                                    <div class="mt-2 text-xs text-orange-400">Check coverage before deployment</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 11: Future Outlook -->
+    <div class="slide" id="slide11">
+        <div class="gradient-bg">
+            <div class="gradient-orb gradient-orb-3" style="opacity: 0.2;"></div>
+            <div class="grid-lines"></div>
+        </div>
+        <div class="content">
+            <div class="flex items-center gap-3 mb-6">
+                <span class="badge"><span class="pulse-dot"></span>Section 7</span>
+                <span class="text-white/30 text-sm">Future Outlook</span>
+            </div>
+            <h2 class="text-4xl md:text-5xl mb-6 text-white font-display font-bold">Future Outlook & Developments</h2>
+            
+            <div class="grid lg:grid-cols-3 gap-5 mb-5">
+                <div class="stat-card p-5 group hover:border-blue-500/40">
+                    <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#0066FF" stroke-width="1.5">
+                            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                        </svg>
+                    </div>
+                    <h3 class="font-display font-semibold text-white mb-2">UnaBiz Ownership</h3>
+                    <p class="text-white/40 text-sm">Continued investment in network expansion and technology enhancement under Singapore-based leadership.</p>
+                </div>
+                
+                <div class="stat-card p-5 group hover:border-purple-500/40">
+                    <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-purple-500/20 to-pink-500/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#6B5CE7" stroke-width="1.5">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                        </svg>
+                    </div>
+                    <h3 class="font-display font-semibold text-white mb-2">Enhanced Security</h3>
+                    <p class="text-white/40 text-sm">Improved device certification programs and advanced security features for enterprise deployments.</p>
+                </div>
+                
+                <div class="stat-card p-5 group hover:border-green-500/40">
+                    <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-green-500/20 to-cyan-500/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#22C55E" stroke-width="1.5">
+                            <circle cx="12" cy="12" r="10"/>
+                            <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                        </svg>
+                    </div>
+                    <h3 class="font-display font-semibold text-white mb-2">Emerging Markets</h3>
+                    <p class="text-white/40 text-sm">Expanded coverage in developing regions, enabling new IoT use cases globally.</p>
+                </div>
+            </div>
+            
+            <div class="grid lg:grid-cols-2 gap-5 flex-1">
+                <div class="stat-card p-5">
+                    <h3 class="text-lg font-display font-semibold text-cyan-400 mb-4">Market Position</h3>
+                    <p class="text-white/50 text-sm mb-4 leading-relaxed">
+                        Sigfox fills a distinct niche that complements rather than competes with higher-bandwidth LPWAN options. The "Massive IoT" market growth aligns perfectly with Sigfox's simplicity-first approach.
+                    </p>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="p-3 rounded-lg bg-white/5 text-center">
+                            <div class="text-xs text-white/40 mb-1">Target Market</div>
+                            <div class="text-cyan-400 font-display font-semibold">Massive IoT</div>
+                        </div>
+                        <div class="p-3 rounded-lg bg-white/5 text-center">
+                            <div class="text-xs text-white/40 mb-1">Position</div>
+                            <div class="text-blue-400 font-display font-semibold">Complementary</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="stat-card p-5">
+                    <h3 class="text-lg font-display font-semibold text-blue-400 mb-4">Innovation Areas</h3>
+                    <div class="space-y-3">
+                        <div class="flex items-center gap-3 p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors">
+                            <div class="w-8 h-8 rounded-lg bg-green-500/20 flex items-center justify-center">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22C55E" stroke-width="2">
+                                    <polyline points="20 6 9 17 4 12"/>
+                                </svg>
+                            </div>
+                            <span class="text-white/70 text-sm">Energy harvesting integration</span>
+                        </div>
+                        <div class="flex items-center gap-3 p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors">
+                            <div class="w-8 h-8 rounded-lg bg-green-500/20 flex items-center justify-center">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22C55E" stroke-width="2">
+                                    <polyline points="20 6 9 17 4 12"/>
+                                </svg>
+                            </div>
+                            <span class="text-white/70 text-sm">Sensor miniaturization</span>
+                        </div>
+                        <div class="flex items-center gap-3 p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors">
+                            <div class="w-8 h-8 rounded-lg bg-green-500/20 flex items-center justify-center">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22C55E" stroke-width="2">
+                                    <polyline points="20 6 9 17 4 12"/>
+                                </svg>
+                            </div>
+                            <span class="text-white/70 text-sm">Edge computing expansion</span>
+                        </div>
+                        <div class="flex items-center gap-3 p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors">
+                            <div class="w-8 h-8 rounded-lg bg-green-500/20 flex items-center justify-center">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22C55E" stroke-width="2">
+                                    <polyline points="20 6 9 17 4 12"/>
+                                </svg>
+                            </div>
+                            <span class="text-white/70 text-sm">Application-specific modules</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 12: Conclusion -->
+    <div class="slide" id="slide12">
+        <div class="gradient-bg">
+            <div class="gradient-orb gradient-orb-1"></div>
+            <div class="gradient-orb gradient-orb-2"></div>
+            <div class="hex-pattern"></div>
+        </div>
+        <div class="content justify-center items-center text-center">
+            <div class="mb-8">
+                <span class="badge"><span class="pulse-dot"></span>Section 8</span>
+            </div>
+            <h1 class="text-5xl md:text-7xl mb-8 font-display font-bold gradient-text">
+                Conclusion
+            </h1>
+            
+            <div class="max-w-3xl mx-auto space-y-6 mb-10">
+                <p class="text-xl text-white/70 leading-relaxed">
+                    Sigfox has established itself as a <span class="text-cyan-400 font-medium">foundational technology</span> in the LPWAN ecosystem, demonstrating that purpose-built IoT connectivity delivers significant advantages over adapted technologies.
+                </p>
+                <p class="text-lg text-white/50 leading-relaxed">
+                    The technology excels in specific use cases: simple sensors transmitting small amounts of data infrequently over long distances while operating on battery power for extended periods.
+                </p>
+            </div>
+            
+            <!-- Key Takeaways -->
+            <div class="flex flex-wrap gap-3 justify-center mb-10">
+                <div class="stat-card px-6 py-4 hover:scale-105 transition-transform">
+                    <div class="text-cyan-400 font-display font-semibold text-lg">Ultra-Low Power</div>
+                    <div class="text-xs text-white/40 mt-1">10-20 years battery</div>
+                </div>
+                <div class="stat-card px-6 py-4 hover:scale-105 transition-transform">
+                    <div class="text-blue-400 font-display font-semibold text-lg">Low Device Cost</div>
+                    <div class="text-xs text-white/40 mt-1">$2 module price</div>
+                </div>
+                <div class="stat-card px-6 py-4 hover:scale-105 transition-transform">
+                    <div class="text-purple-400 font-display font-semibold text-lg">Network Simplicity</div>
+                    <div class="text-xs text-white/40 mt-1">Zero configuration</div>
+                </div>
+                <div class="stat-card px-6 py-4 hover:scale-105 transition-transform">
+                    <div class="text-green-400 font-display font-semibold text-lg">Global Coverage</div>
+                    <div class="text-xs text-white/40 mt-1">75+ countries</div>
+                </div>
+            </div>
+            
+            <!-- Final Message -->
+            <div class="stat-card p-6 max-w-xl mx-auto mb-8">
+                <p class="text-white/60 text-sm leading-relaxed">
+                    For enterprises evaluating IoT connectivity options, understanding Sigfox's characteristics, strengths, and limitations is essential for making informed technology selection decisions that align with specific application requirements.
+                </p>
+            </div>
+            
+           
+        </div>
+    </div>
+
+    <script>
+        // Initialize variables
+        let currentSlide = 1;
+        const totalSlides = 12;
+        const slides = document.querySelectorAll('.slide');
+        const navIndicator = document.getElementById('navIndicator');
+        const progressBar = document.getElementById('progressBar');
+        
+        // Create navigation dots
+        for (let i = 1; i <= totalSlides; i++) {
+            const dot = document.createElement('div');
+            dot.className = 'nav-dot' + (i === 1 ? ' active' : '');
+            dot.onclick = () => scrollToSlide(i);
+            navIndicator.appendChild(dot);
+        }
+        
+        // Update progress and nav dots
+        function updateProgress() {
+            const progress = (currentSlide / totalSlides) * 100;
+            progressBar.style.width = `${progress}%`;
+            
+            document.querySelectorAll('.nav-dot').forEach((dot, index) => {
+                dot.classList.toggle('active', index === currentSlide - 1);
+            });
+        }
+        
+        // Scroll to specific slide
+        function scrollToSlide(n) {
+            document.getElementById(`slide${n}`).scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        // Intersection Observer for scroll detection
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const slideId = entry.target.id;
+                    currentSlide = parseInt(slideId.replace('slide', ''));
+                    updateProgress();
+                    
+                    // Trigger animations for timeline items
+                    entry.target.querySelectorAll('.timeline-item').forEach((item, index) => {
+                        item.style.animationDelay = `${index * 0.15}s`;
+                    });
+                }
+            });
+        }, { threshold: 0.5 });
+        
+        slides.forEach(slide => observer.observe(slide));
+        
+        // Counter animation
+        function animateCounters() {
+            const counters = document.querySelectorAll('.counter');
+            counters.forEach(counter => {
+                const target = parseFloat(counter.dataset.target);
+                const suffix = counter.dataset.suffix || '';
+                const duration = 2000;
+                const startTime = performance.now();
+                
+                function update(currentTime) {
+                    const elapsed = currentTime - startTime;
+                    const progress = Math.min(elapsed / duration, 1);
+                    const easeOut = 1 - Math.pow(1 - progress, 3);
+                    const current = target * easeOut;
+                    
+                    if (Number.isInteger(target)) {
+                        counter.textContent = Math.round(current) + suffix;
+                    } else {
+                        counter.textContent = current.toFixed(1) + suffix;
+                    }
+                    
+                    if (progress < 1) {
+                        requestAnimationFrame(update);
+                    }
+                }
+                
+                requestAnimationFrame(update);
+            });
+        }
+        
+        // Trigger counter animation on first slide
+        const firstSlideObserver = new IntersectionObserver((entries) => {
+            if (entries[0].isIntersecting) {
+                animateCounters();
+                firstSlideObserver.disconnect();
+            }
+        }, { threshold: 0.5 });
+        
+        firstSlideObserver.observe(document.getElementById('slide1'));
+        
+        // Message calculator
+        function updateCalc() {
+            const msgSlider = document.getElementById('msgSlider');
+            const payloadSlider = document.getElementById('payloadSlider');
+            
+            if (!msgSlider || !payloadSlider) return;
+            
+            const msgs = parseInt(msgSlider.value);
+            const payload = parseInt(payloadSlider.value);
+            
+            document.getElementById('msgValue').textContent = msgs;
+            document.getElementById('payloadValue').textContent = payload;
+            
+            const dailyData = msgs * payload;
+            document.getElementById('dailyData').textContent = dailyData + ' B';
+            
+            // Estimate battery life (rough calculation)
+            const dailyTxTime = msgs * 2; // ~2 seconds per message
+            const yearlyTxTime = dailyTxTime * 365;
+            const batteryLife = Math.max(5, Math.min(20, Math.round(20000 / (yearlyTxTime / 3600))));
+            document.getElementById('batteryEst').textContent = batteryLife + '+ years';
+        }
+        
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+                e.preventDefault();
+                if (currentSlide < totalSlides) scrollToSlide(currentSlide + 1);
+            } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+                e.preventDefault();
+                if (currentSlide > 1) scrollToSlide(currentSlide - 1);
+            }
+        });
+        
+        // Mouse wheel navigation
+        let wheelTimeout = null;
+        document.addEventListener('wheel', (e) => {
+            if (wheelTimeout) return;
+            
+            wheelTimeout = setTimeout(() => {
+                wheelTimeout = null;
+            }, 800);
+            
+            if (e.deltaY > 30 && currentSlide < totalSlides) {
+                scrollToSlide(currentSlide + 1);
+            } else if (e.deltaY < -30 && currentSlide > 1) {
+                scrollToSlide(currentSlide - 1);
+            }
+        }, { passive: true });
+        
+        // Touch support
+        let touchStartY = 0;
+        document.addEventListener('touchstart', (e) => {
+            touchStartY = e.changedTouches[0].screenY;
+        }, { passive: true });
+        
+        document.addEventListener('touchend', (e) => {
+            const touchEndY = e.changedTouches[0].screenY;
+            const diff = touchStartY - touchEndY;
+            
+            if (Math.abs(diff) > 50) {
+                if (diff > 0 && currentSlide < totalSlides) {
+                    scrollToSlide(currentSlide + 1);
+                } else if (diff < 0 && currentSlide > 1) {
+                    scrollToSlide(currentSlide - 1);
+                }
+            }
+        }, { passive: true });
+        
+        // Initialize
+        updateProgress();
+        updateCalc();
+    </script>
+</body>
+</html>
